@@ -1,0 +1,57 @@
+#include "keybinds.hpp"
+#include "raylib-cpp.hpp"
+#include "scene.hpp"
+#include "scene_manager.hpp"
+
+#define RAYGUI_IMPLEMENTATION
+#include "raygui.h"
+#include <iostream>
+
+MainMenu::MainMenu() {
+  GuiSetStyle(DEFAULT, TEXT_SIZE, 64);
+
+  // Load Arcademia Logo
+  arcademiaTex = raylib::Texture("resources/Arcademia_Logo.png");
+}
+
+MainMenu::~MainMenu(void) {
+  acceptPressed = false;
+  arcademiaTex.Unload();
+}
+
+void MainMenu::Update() {
+  acceptPressed = IsKeyPressed(KEYBINDS.primary.key);
+
+  if (IsKeyPressed(KEYBINDS.moveRight.key)) {
+    selectedOption = MenuOption::Quit;
+  }
+  if (IsKeyPressed(KEYBINDS.moveLeft.key)) {
+    selectedOption = MenuOption::Play;
+  }
+}
+
+void MainMenu::Draw() {
+  ClearBackground(BLACK);
+
+  arcademiaTex.Draw((1280 - arcademiaTex.width) / 2, 200, WHITE);
+
+  GuiSetState(selectedOption == MenuOption::Play ? STATE_FOCUSED
+                                                 : STATE_NORMAL);
+
+  if (GuiButton(Rectangle(200, 400, 200, 100), "PLAY") ||
+      (selectedOption == MenuOption::Play && acceptPressed)) {
+    sceneManager.SetScene(std::make_unique<PlayScene>());
+  }
+
+  GuiSetState(selectedOption == MenuOption::Quit ? STATE_FOCUSED
+                                                 : STATE_NORMAL);
+
+  if (GuiButton(Rectangle(880, 400, 200, 100), "QUIT") ||
+      (selectedOption == MenuOption::Quit && acceptPressed)) {
+    sceneManager.CloseGame();
+  }
+
+  if (acceptPressed) {
+    std::cout << "Accept Pressed";
+  }
+}

@@ -1,0 +1,51 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build & Run",
+            "type": "shell",
+            "command": "cmake -S . -B build && cmake --build build --config ${input:buildConfig} --target run",
+            "options": {
+                "shell": {
+                    "executable": "cmd.exe",
+                    "args": ["/d", "/c"]
+                }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "cmake -S . -B build && cmake --build build --config ${input:buildConfig}",
+            "options": {
+                "shell": {
+                    "executable": "cmd.exe",
+                    "args": ["/d", "/c"]
+                }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": "$msCompile"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "buildConfig",
+            "type": "pickString",
+            "description": "Build configuration",
+            "options": [
+                "Debug",
+                "Release",
+                "Arcademia",
+                "Arcademia_Debug",
+            ],
+            "default": "Debug"
+        }
+    ]
+}
