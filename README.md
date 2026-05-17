@@ -4,6 +4,8 @@ This is a template used for building Arcademia games using [raylib-cpp](https://
 
 This template provides minimal boilerplate for getting a game started in raylib, including an automatic build pipeline which fetches raylib automatically, input handling, and a basic scene system which may provide some familiary to developers migrating from Unity, Godot or Unreal Engine.
 
+This template has been designed and tested on both Windows and Linux.
+
 ## Getting Started
 
 This project was built to work seamlessly with [VSCode](https://code.visualstudio.com/) and [Cmake](https://cmake.org/), please ensure you have both installed before working with this template.
