@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.14)
 project(arcademia_template)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(FETCHCONTENT_QUIET FALSE CACHE BOOL "" FORCE)
 include(FetchContent)
 
 # ---------------------------------------------------------------------------

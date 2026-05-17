@@ -21,6 +21,8 @@ Each of these build types expose a different set of compiler flags which can be 
 - **Arcademia:** ARCADEMIA, RELEASE
 - **Arcademia_Debug:** ARCADEMIA, DEBUG
 
+*NOTE:* The first time running this project may take a few minutes depending on your internet connection, as CMake must pull raylib from source.
+
 ## Features
 
 ### Compiler Flags
