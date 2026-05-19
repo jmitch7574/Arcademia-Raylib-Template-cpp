@@ -13,6 +13,7 @@ struct ExampleKeybinds {
   Keybind moveDown;
   Keybind primary;
   Keybind secondary;
+  Keybind console;
 };
 
 #ifdef ARCADEMIA
@@ -69,12 +70,14 @@ inline constexpr Keybind P2_EXIT  = {KEY_Q, "P2 Exit"};
 // ARCADEMIA BINDS
 // =================================================
 
-inline constexpr ExampleKeybinds KEYBINDS = {.moveLeft  = P1_JOYSTICK_LEFT,
-                                             .moveRight = P1_JOYSTICK_RIGHT,
-                                             .moveUp    = P1_JOYSTICK_UP,
-                                             .moveDown  = P1_JOYSTICK_DOWN,
-                                             .primary   = P1_A,
-                                             .secondary = P1_B};
+inline constexpr ExampleKeybinds KEYBINDS = {
+    .moveLeft  = P1_JOYSTICK_LEFT,
+    .moveRight = P1_JOYSTICK_RIGHT,
+    .moveUp    = P1_JOYSTICK_UP,
+    .moveDown  = P1_JOYSTICK_DOWN,
+    .primary   = P1_A,
+    .secondary = P1_B,
+    .console   = {KEY_GRAVE, "Backtick"}};
 
 #else
 
@@ -88,6 +91,7 @@ inline constexpr ExampleKeybinds KEYBINDS = {
     .moveUp    = {KEY_W, "W"},
     .moveDown  = {KEY_S, "S"},
     .primary   = {KEY_ENTER, "Enter"},
-    .secondary = {KEY_BACKSPACE, "Backspace"}};
+    .secondary = {KEY_BACKSPACE, "Backspace"},
+    .console   = {KEY_GRAVE, "Backtick"}} ;
 
 #endif

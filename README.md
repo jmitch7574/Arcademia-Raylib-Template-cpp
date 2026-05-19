@@ -247,3 +247,56 @@ The currently active scene can be changed with the following line of code:
 ```cpp
 sceneManager.SetScene(std::make_unique<Scene>());
 ```
+
+### Debug Console
+
+The template comes with a debug console that can be accessed at anytime in a *DEBUG* build by using the backtick (`) key. The debug console allows you to output logs, warnings and errors to an in-game display, more importantly, it allows you to input custom commands to quickly alter the flow of the game at run-time. While the console is active, SceneManager will stop running Update() calls, though will still call Draw().
+
+The console comes preloaded with a single command "ls" which can be used to load scenes. The scenes available to this command can be defined within SceneManager.hpp.
+
+#### Accessing Console When Writing Code
+
+The console can be accessed using a singleton 
+
+```cpp
+Console::Get()
+```
+
+
+#### Command Definition
+
+```cpp
+Player::Player() {
+  // Set players max health on construction
+  health = maxHealth;
+
+  // Define command
+  Console::Get().RegisterCommand(
+    "full_heal",
+    [this](const std::vector<std::string> &args) {
+      // Example - full healing the player (you cheater)
+      this->health = maxHealth;
+    }
+  )
+}
+```
+
+*Note: Attempting to register a second command under the same name is not allowed and will throw an error. Please ensure that commands are properly unregisterd when an object is freed*
+
+```cpp
+Player::~Player() {
+  Console::Get().UnregisterCommand("full_heal")
+}
+```
+
+#### Logging to Console
+
+The console has three different functions for printing to the console at three different levels:
+
+```cpp
+void Log(const std::string &message);    // Logs in RAYWHITE
+void Warn(const std::string &message);   // Logs in GOLD
+void Error(const std::string &message);  // Logs in RED
+```
+
+Functionally, these are no different from another apart from the colour the message gets rendered in.
