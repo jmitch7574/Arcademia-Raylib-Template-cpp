@@ -5,14 +5,7 @@
 #include "raylib.h"
 #include <cstring>
 
-Console::Console() {
-  messages = std::vector<Message>();
-#ifdef DEBUG
-  enabled = true;
-#else
-  enabled = false;
-#endif
-}
+Console::Console() { messages = std::vector<Message>(); }
 
 Console::~Console(void) {};
 
