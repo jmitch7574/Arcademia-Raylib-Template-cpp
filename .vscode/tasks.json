@@ -9,19 +9,21 @@
                 "options": {
                     "shell": {
                         "executable": "cmd.exe",
-                        "args": ["/d", "/c"]
+                        "args": [
+                            "/d",
+                            "/c"
+                        ]
                     }
                 }
             },
             "linux": {
-                "command": "cmake -DCMAKE_BUILD_TYPE=${input:buildConfig} .. && make run",
+                "command": "cmake -S . -B build -DCMAKE_BUILD_TYPE=${input:buildConfig} && cmake --build build --target run",
                 "options": {
-                    "cwd": "build"
+                    "cwd": "${workspaceFolder}"
                 }
             },
             "group": {
-                "kind": "build",
-                "isDefault": true
+                "kind": "build"
             },
             "problemMatcher": "$msCompile"
         },
@@ -29,25 +31,69 @@
             "label": "Build",
             "type": "shell",
             "windows": {
-                "command": "cmake -S . -B build && cmake --build build --config ${input:buildConfig} --target run",
+                "command": "cmake -S . -B build && cmake --build build --config ${input:buildConfig}",
                 "options": {
                     "shell": {
                         "executable": "cmd.exe",
-                        "args": ["/d", "/c"]
+                        "args": [
+                            "/d",
+                            "/c"
+                        ]
                     }
                 }
             },
             "linux": {
-                "command": "cmake -DCMAKE_BUILD_TYPE=${input:buildConfig} .. && make",
+                "command": "cmake -S . -B build -DCMAKE_BUILD_TYPE=${input:buildConfig} && cmake --build build",
                 "options": {
-                    "cwd": "build"
+                    "cwd": "${workspaceFolder}"
                 }
             },
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
+            "group": "build",
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Build Web",
+            "type": "shell",
+            "windows": {
+                "command": "emcmake cmake -S . -B build-web -DCMAKE_BUILD_TYPE=${input:buildConfig} && cmake --build build-web",
+                "options": {
+                    "shell": {
+                        "executable": "cmd.exe",
+                        "args": [
+                            "/d",
+                            "/c"
+                        ]
+                    }
+                }
+            },
+            "linux": {
+                "command": "emcmake cmake -S . -B build-web -DCMAKE_BUILD_TYPE=${input:buildConfig} && cmake --build build-web",
+                "options": {
+                    "cwd": "${workspaceFolder}"
+                }
+            },
+            "group": "build",
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Serve Web",
+            "type": "shell",
+            "command": "python3 -m http.server 8080",
+            "options": {
+                "cwd": "${workspaceFolder}/build-web"
+            },
+            "isBackground": true,
+            "problemMatcher": []
+        },
+        {
+            "label": "Build & Run Web",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Build Web",
+                "Serve Web"
+            ],
+            "group": "build",
+            "problemMatcher": []
         }
     ],
     "inputs": [
@@ -59,7 +105,7 @@
                 "Debug",
                 "Release",
                 "Arcademia",
-                "Arcademia_Debug",
+                "Arcademia_Debug"
             ],
             "default": "Debug"
         }

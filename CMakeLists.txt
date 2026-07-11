@@ -29,15 +29,36 @@ set(CMAKE_CXX_FLAGS_ARCADEMIA_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 # ---------------------------------------------------------------------------
 
 # raylib
-find_package(raylib QUIET)
-if(NOT raylib_FOUND)
+if(EMSCRIPTEN)
     FetchContent_Declare(
         raylib
         GIT_REPOSITORY https://github.com/raysan5/raylib.git
         GIT_TAG 6.0
         GIT_SHALLOW 1
     )
-    FetchContent_MakeAvailable(raylib)
+    FetchContent_Populate(raylib)
+
+    set(RAYLIB_WEB_LIB "${CMAKE_SOURCE_DIR}/web/runtimes/wasm/libraylib.web.a")
+    if(NOT EXISTS "${RAYLIB_WEB_LIB}")
+        message(FATAL_ERROR "Prebuilt web raylib not found at ${RAYLIB_WEB_LIB}")
+    endif()
+
+    add_library(raylib STATIC IMPORTED GLOBAL)
+    set_target_properties(raylib PROPERTIES
+        IMPORTED_LOCATION "${RAYLIB_WEB_LIB}"
+    )
+    target_include_directories(raylib INTERFACE ${raylib_SOURCE_DIR}/src)
+else()
+    find_package(raylib QUIET)
+    if(NOT raylib_FOUND)
+        FetchContent_Declare(
+            raylib
+            GIT_REPOSITORY https://github.com/raysan5/raylib.git
+            GIT_TAG 6.0
+            GIT_SHALLOW 1
+        )
+        FetchContent_MakeAvailable(raylib)
+    endif()
 endif()
 
 # imgui
@@ -104,41 +125,63 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     $<$<CONFIG:Arcademia_Debug>:ARCADEMIA DEBUG>
     $<$<CONFIG:Debug>:DEBUG>
     $<$<CONFIG:Release>:RELEASE>
+    $<$<BOOL:${EMSCRIPTEN}>:PLATFORM_WEB>
 )
 
 # ---------------------------------------------------------------------------
-# Resources
+# Emscripten / Web build
 # ---------------------------------------------------------------------------
+if(EMSCRIPTEN)
+    set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".html" OUTPUT_NAME "index")
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/resources
-        $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
-    COMMENT "Copying resources to build directory"
-)
+    target_link_options(${PROJECT_NAME} PRIVATE
+        "-sUSE_GLFW=3"
+        "-sASYNCIFY"
+        "-sALLOW_MEMORY_GROWTH=1"
+        "-sGROWABLE_ARRAYBUFFERS=0"
+        "-sFORCE_FILESYSTEM=1"
+        "--preload-file=${CMAKE_SOURCE_DIR}/resources@resources"
+        "--shell-file=${CMAKE_SOURCE_DIR}/web/shell.html"
+    )
+endif()
+
+# ---------------------------------------------------------------------------
+# Resources (native builds only -- web packages resources via --preload-file)
+# ---------------------------------------------------------------------------
+if(NOT EMSCRIPTEN)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/resources
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>/resources
+        COMMENT "Copying resources to build directory"
+    )
+endif()
 
 # ---------------------------------------------------------------------------
 # Run Command
 # ---------------------------------------------------------------------------
-
-add_custom_target(run
-    COMMAND $<TARGET_FILE:${PROJECT_NAME}>
-    DEPENDS ${PROJECT_NAME}
-    WORKING_DIRECTORY $<TARGET_FILE_DIR:${PROJECT_NAME}>
-)
+if(NOT EMSCRIPTEN)
+    add_custom_target(run
+        COMMAND $<TARGET_FILE:${PROJECT_NAME}>
+        DEPENDS ${PROJECT_NAME}
+        WORKING_DIRECTORY $<TARGET_FILE_DIR:${PROJECT_NAME}>
+    )
+endif()
 
 # ---------------------------------------------------------------------------
 # clangd support
 # ---------------------------------------------------------------------------
-set(CLANGD_FLAGS
-    "-I${CMAKE_SOURCE_DIR}/include"
-    "-I${raylib_SOURCE_DIR}/src"
-    "-I${imgui_SOURCE_DIR}"
-    "-I${rlimgui_SOURCE_DIR}"
-    "-std=c++20"
-)
-list(JOIN CLANGD_FLAGS "\n" CLANGD_FLAGS_STR)
-file(GENERATE
-    OUTPUT "${CMAKE_SOURCE_DIR}/compile_flags.txt"
-    CONTENT "${CLANGD_FLAGS_STR}\n"
-)
+if(NOT EMSCRIPTEN)
+    set(CLANGD_FLAGS
+        "-I${CMAKE_SOURCE_DIR}/include"
+        "-I${raylib_SOURCE_DIR}/src"
+        "-I${imgui_SOURCE_DIR}"
+        "-I${rlimgui_SOURCE_DIR}"
+        "-std=c++20"
+    )
+    list(JOIN CLANGD_FLAGS "\n" CLANGD_FLAGS_STR)
+    file(GENERATE
+        OUTPUT "${CMAKE_SOURCE_DIR}/compile_flags.txt"
+        CONTENT "${CLANGD_FLAGS_STR}\n"
+    )
+endif()
