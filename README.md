@@ -254,8 +254,22 @@ sceneManager.SetScene(std::make_unique<Scene>());
 
 ### Inspector
 
-A custom real time game inspector is available, powered by Dear ImGui, allowing you to view and modify game properties on the fly, similar to how inspectors work in contemporary engines like Godot or Unity.
+A custom real time game inspector is available, powered by Dear ImGui, allowing you to view and modify game properties on the fly, similar to how inspectors work in contemporary engines like Godot or Unity. The inspector can be toggled at any time by using the \` key (changeable in `keybinds.hpp`).
 
 By default, the only sections available in this inspector are Engine and Scene, which provide engine options and on-the-fly scene swapping. Additional inspectors can be added by having a class inherit from `IInspector` and implementing both the `GetName()` and `DrawInspector()` functions with the relevant ImGui calls that should go into its section.
 
 *Note: It is recommended to only use IInspector on classes that will only ever have one or two instances exist at any given time, such as scenes or singletons, if you want to inspect a class which may have a large amount of instances, such as enemies, it is recommended you draw then with collapsible headers, managed by the scene, this may change in future.*
+
+### Inspector Console
+
+For the use of displaying logs, warnings and errors which was previously done by the Debug Console, the inspecor also has a console window that spans the bottom of the screen.
+
+To send a message to this console, you can use the following functions:
+
+```cpp
+void Log(const char *message);
+void Warn(const char *message);
+void Error(const char *message);
+```
+
+These functions all display text the same way, the only difference is the colour the messages are displayed in.
