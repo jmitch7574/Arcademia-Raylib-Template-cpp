@@ -267,9 +267,9 @@ For the use of displaying logs, warnings and errors which was previously done by
 To send a message to this console, you can use the following functions:
 
 ```cpp
-void Log(const char *message);
-void Warn(const char *message);
-void Error(const char *message);
+void Inspector::Log(const char *message);
+void Inspector::Warn(const char *message);
+void Inspector::Error(const char *message);
 ```
 
 These functions all display text the same way, the only difference is the colour the messages are displayed in.
