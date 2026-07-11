@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build & Run",
+            "label": "Build & Run Local",
             "type": "shell",
             "windows": {
                 "command": "cmake -S . -B build && cmake --build build --config ${input:buildConfig} --target run",
@@ -28,7 +28,7 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "Build",
+            "label": "Build Local",
             "type": "shell",
             "windows": {
                 "command": "cmake -S . -B build && cmake --build build --config ${input:buildConfig}",
