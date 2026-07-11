@@ -17,6 +17,11 @@
 #define INTERNAL_WIDTH 1280
 #define INTERNAL_HEIGHT 720
 
+#define GetMousePosition GameRenderer::GetScaledMousePosition
+#define RAYGUI_IMPLEMENTATION
+#include "raygui.h"
+#undef GetMousePosition
+
 int main() {
   Inspector::Warn("Example Warning...");
   Inspector::Error("Example Error...");

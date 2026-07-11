@@ -3,7 +3,6 @@
 #include "scene.hpp"
 #include "scene_manager.hpp"
 
-#define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
 #include <iostream>
 
