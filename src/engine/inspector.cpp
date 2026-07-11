@@ -43,8 +43,7 @@ void Inspector::DrawInspector() {
 
   // Inspector goes right hand side
   ImGui::SetNextWindowPos(ImVec2(width - inspectorWidth, 0));
-  ImGui::SetNextWindowSize(
-      ImVec2((float)inspectorWidth, (float)(height - consoleHeight)));
+  ImGui::SetNextWindowSize(ImVec2((float)inspectorWidth, (float)(height)));
 
   // Initialise Window and Tabs
   ImGui::Begin("Inspector");
@@ -69,7 +68,8 @@ void Inspector::DrawInspector() {
 
   // Inspector goes right hand side
   ImGui::SetNextWindowPos(ImVec2(0, (float)(height - consoleHeight)));
-  ImGui::SetNextWindowSize(ImVec2((float)width, (float)(consoleHeight)));
+  ImGui::SetNextWindowSize(
+      ImVec2((float)(width - inspectorWidth), (float)(consoleHeight)));
 
   ImGui::Begin("Console");
 
