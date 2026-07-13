@@ -1,4 +1,5 @@
 #pragma once
+#include <queue>
 #include <string>
 #include <time.h>
 #include <vector>
@@ -47,6 +48,10 @@ namespace {
   bool isOpen;
   bool pauseWhenOpen = true;
   bool autoScroll    = true;
+
+  // Perforamnce Graph Data
+  std::vector<float> frametimes;
+  const int maxFrametimeHistory = 600;
 
   enum MessageLevel { LOG, WARNING, ERROR };
 

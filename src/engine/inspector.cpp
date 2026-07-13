@@ -6,7 +6,10 @@
 #include <time.h>
 #include <vector>
 
-void Inspector::Init() { rlImGuiSetup(true); }
+void Inspector::Init() {
+  rlImGuiSetup(true);
+  frametimes = std::vector<float>(maxFrametimeHistory, 0.0f);
+}
 
 void Inspector::Shutdown() { rlImGuiShutdown(); }
 
@@ -129,13 +132,62 @@ void Inspector::DrawEngineTab() {
   if (ImGui::BeginTabItem("Engine")) {
     ImGui::Checkbox("Pause when Open", &pauseWhenOpen);
 
-    ImGui::SeparatorText("Engine Info");
+    time_t c_time;
+    time(&c_time);
+
+    ImGui::Text("%s", ctime(&c_time));
+
+    ImGui::SeparatorText("Arcademia Crossplatform Raylib Engine (ACRE)");
+    ImGui::Text("Raylib v%s", RAYLIB_VERSION);
+    ImGui::Text("DearImgui v%s", IMGUI_VERSION);
+
+    ImGui::SeparatorText("Details");
     ImGui::Text("Mouse Position (Window): %f %f", GetMousePosition().x,
                 GetMousePosition().y);
 
     ImGui::Text("Mouse Position (Internal): %f %f",
                 GameRenderer::GetScaledMousePosition().x,
                 GameRenderer::GetScaledMousePosition().y);
+
+    // Performance Graphs
+    frametimes.push_back(GetFrameTime() * 1000);
+    if (frametimes.size() > maxFrametimeHistory)
+      frametimes.erase(frametimes.begin());
+
+    float arr[maxFrametimeHistory];
+    copy(frametimes.begin(), frametimes.end(), arr);
+
+    ImGui::PlotLines("Frame Times", arr, IM_COUNTOF(arr), 0, nullptr, 0.0f,
+                     60.0f, ImVec2(0, 50));
+
+    // Basic Renderer Settings
+    if (ImGui::CollapsingHeader("Renderer")) {
+      // Resolution State
+      int width  = GetScreenWidth();
+      int height = GetScreenHeight();
+
+      ImGui::PushItemWidth(75.0f);
+      ImGui::InputScalar("Width", ImGuiDataType_S16, &width);
+      if (ImGui::IsItemDeactivatedAfterEdit())
+        SetWindowSize(width, height);
+
+      ImGui::SameLine();
+
+      ImGui::PushItemWidth(75.0f);
+      ImGui::InputScalar("Height", ImGuiDataType_S16, &height);
+      if (ImGui::IsItemDeactivatedAfterEdit())
+        SetWindowSize(width, height);
+
+      bool isFullscreen = IsWindowFullscreen();
+
+      if (ImGui::Checkbox("Fullscreen", &isFullscreen)) {
+        if (isFullscreen) {
+          SetWindowState(FLAG_FULLSCREEN_MODE);
+        } else {
+          ClearWindowState(FLAG_FULLSCREEN_MODE);
+        }
+      }
+    }
 
     ImGui::EndTabItem();
   }
