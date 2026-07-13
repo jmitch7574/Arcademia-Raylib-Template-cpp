@@ -3,6 +3,7 @@
 #include "imgui.h"
 #include "raylib.h"
 #include "rlImGui.h"
+#include <algorithm>
 #include <time.h>
 #include <vector>
 
@@ -150,6 +151,7 @@ void Inspector::DrawEngineTab() {
                 GameRenderer::GetScaledMousePosition().y);
 
     // Performance Graphs
+    ImGui::SeparatorText("Performance");
     frametimes.push_back(GetFrameTime() * 1000);
     if (frametimes.size() > maxFrametimeHistory)
       frametimes.erase(frametimes.begin());
@@ -159,6 +161,13 @@ void Inspector::DrawEngineTab() {
 
     ImGui::PlotLines("Frame Times", arr, IM_COUNTOF(arr), 0, nullptr, 0.0f,
                      60.0f, ImVec2(0, 50));
+
+    ImGui::Text("Current FPS: %f", 1.0 / GetFrameTime());
+
+    std::vector<float> sortedFrametimes = frametimes;
+    sort(sortedFrametimes.begin(), sortedFrametimes.end());
+
+    ImGui::Text("Min FPS: %f", 1000.0 / sortedFrametimes.back());
 
     // Basic Renderer Settings
     if (ImGui::CollapsingHeader("Renderer")) {
