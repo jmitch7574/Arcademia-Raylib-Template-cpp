@@ -42,9 +42,6 @@ void Inspector::DrawInspector() {
   int width  = GetScreenWidth();
   int height = GetScreenHeight();
 
-  const int inspectorWidth = 400;
-  const int consoleHeight  = 200;
-
   // Inspector goes right hand side
   ImGui::SetNextWindowPos(ImVec2(width - inspectorWidth, 0));
   ImGui::SetNextWindowSize(ImVec2((float)inspectorWidth, (float)(height)));
@@ -221,8 +218,16 @@ time_t Inspector::GetTimestamp() {
   return currentTime;
 }
 
+#ifdef DEBUG
 bool Inspector::IsOpen() { return isOpen; }
+#else
+bool Inspector::IsOpen() { return false; }
+#endif
 
 bool Inspector::ShouldPauseGame() { return isOpen && pauseWhenOpen; }
 
 void Inspector::Toggle() { isOpen = !IsOpen(); }
+
+int Inspector::GetDeadZoneY() { return consoleHeight; }
+
+int Inspector::GetDeadZoneX() { return inspectorWidth; }

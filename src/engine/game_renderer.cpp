@@ -1,4 +1,5 @@
 #include "game_renderer.hpp"
+#include "inspector.hpp"
 #include "raylib.h"
 #include "raymath.h"
 
@@ -20,9 +21,15 @@ void GameRenderer::Flip(std::vector<Shader *> shaders) {
     BeginShaderMode(*shaders[i]);
   }
 
+  Rectangle destination = Rectangle(0, 0, GetScreenWidth(), GetScreenHeight());
+
+  if (Inspector::IsOpen()) {
+    destination.height -= Inspector::GetDeadZoneY();
+    destination.width -= Inspector::GetDeadZoneX();
+  }
+
   DrawTexturePro(tex.texture, Rectangle(0, 0, GetWidth(), -GetHeight()),
-                 Rectangle(0, 0, GetScreenWidth(), GetScreenHeight()),
-                 Vector2(0, 0), 0, WHITE);
+                 destination, Vector2(0, 0), 0, WHITE);
 
   for (int j = 0; j < shaders.size(); j++) {
     EndShaderMode();

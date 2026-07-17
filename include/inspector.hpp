@@ -33,6 +33,8 @@ namespace Inspector {
   bool IsOpen();
   bool ShouldPauseGame();
   void Toggle();
+  int GetDeadZoneY();
+  int GetDeadZoneX();
 } // namespace Inspector
 
 struct IInspector {
@@ -45,9 +47,12 @@ struct IInspector {
 };
 
 namespace {
-  bool isOpen;
-  bool pauseWhenOpen = true;
+  bool isOpen        = true;
+  bool pauseWhenOpen = false;
   bool autoScroll    = true;
+
+  const int inspectorWidth = 400;
+  const int consoleHeight  = 200;
 
   // Perforamnce Graph Data
   std::vector<float> frametimes;
