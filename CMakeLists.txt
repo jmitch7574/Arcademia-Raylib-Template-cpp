@@ -89,6 +89,41 @@ if(NOT rlimgui_FOUND) # <--- FIXED: Case-sensitivity
     FetchContent_MakeAvailable(rlimgui)
 endif()
 
+# SDL3
+find_package(SDL3 QUIET)
+if(NOT SDL3_FOUND)
+    FetchContent_Declare(
+        SDL3
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+        GIT_TAG        release-3.4.12
+    )
+    FetchContent_MakeAvailable(SDL3)
+endif()
+
+# Statically link to EXE
+set(SDL_SHARED OFF CACHE BOOL "" FORCE)
+set(SDL_STATIC ON  CACHE BOOL "" FORCE)
+
+
+# Require SDL3 Input
+set(SDL_JOYSTICK ON CACHE BOOL "" FORCE)
+set(SDL_HIDAPI   ON CACHE BOOL "" FORCE)
+set(SDL_HAPTIC   ON CACHE BOOL "" FORCE)
+set(SDL_SENSOR   ON CACHE BOOL "" FORCE)
+
+# Don't Compile unused systems
+set(SDL_VIDEO   OFF CACHE BOOL "" FORCE)
+set(SDL_RENDER  OFF CACHE BOOL "" FORCE)
+set(SDL_AUDIO   OFF CACHE BOOL "" FORCE)
+set(SDL_CAMERA  OFF CACHE BOOL "" FORCE)
+set(SDL_GPU     OFF CACHE BOOL "" FORCE)
+set(SDL_DIALOG  OFF CACHE BOOL "" FORCE)
+set(SDL_TRAY    OFF CACHE BOOL "" FORCE)
+set(SDL_POWER   OFF CACHE BOOL "" FORCE)
+set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
+set(SDL_EXAMPLES     OFF CACHE BOOL "" FORCE)
+set(SDL_INSTALL_DOCS OFF CACHE BOOL "" FORCE)
+
 # ---------------------------------------------------------------------------
 # Target
 # ---------------------------------------------------------------------------
@@ -108,6 +143,7 @@ add_library(rlimgui STATIC ${rlimgui_SOURCE_DIR}/rlImGui.cpp)
 target_include_directories(rlimgui PUBLIC ${rlimgui_SOURCE_DIR})
 target_link_libraries(rlimgui PUBLIC raylib imgui)
 
+
 # Source Files
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
 
@@ -116,6 +152,9 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib rlimgui) 
+
+# Link SDL3
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD          20
