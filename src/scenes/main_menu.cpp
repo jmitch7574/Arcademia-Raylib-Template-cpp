@@ -1,4 +1,3 @@
-#include "keybinds.hpp"
 #include "raylib.h"
 #include "scene.hpp"
 #include "scene_manager.hpp"
@@ -19,14 +18,14 @@ MainMenu::~MainMenu(void) {
 }
 
 void MainMenu::Update() {
-  acceptPressed = IsKeyPressed(KEYBINDS.primary.key);
+  // acceptPressed = IsKeyPressed(KEYBINDS.primary.key);
 
-  if (IsKeyPressed(KEYBINDS.moveRight.key)) {
-    selectedOption = MenuOption::Quit;
-  }
-  if (IsKeyPressed(KEYBINDS.moveLeft.key)) {
-    selectedOption = MenuOption::Play;
-  }
+  // if (IsKeyPressed(KEYBINDS.moveRight.key)) {
+  //   selectedOption = MenuOption::Quit;
+  // }
+  // if (IsKeyPressed(KEYBINDS.moveLeft.key)) {
+  //   selectedOption = MenuOption::Play;
+  // }
 }
 
 void MainMenu::Draw() {

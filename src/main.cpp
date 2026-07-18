@@ -1,8 +1,8 @@
+#include "engine/input/input_manager.hpp"
 #include "game_renderer.hpp"
 #include "game_resources.hpp"
 #include "imgui.h"
 #include "inspector.hpp"
-#include "keybinds.hpp"
 #include "raylib.h"
 #include "rlImGui.h"
 #include "scene.hpp"
@@ -52,11 +52,13 @@ int main() {
   while (!WindowShouldClose() && !sceneManager.shouldExit) {
     // Update Logic Here ========================
 
-    if (IsKeyPressed(KEYBINDS.inspector.key))
+    if (IsKeyPressed(KEY_GRAVE))
       Inspector::Toggle();
 
-    if (!Inspector::ShouldPauseGame())
+    if (!Inspector::ShouldPauseGame()) {
+      InputManager::Update();
       sceneManager.Update();
+    }
 
     // Drawing Logic Here =======================
     GameRenderer::Begin();

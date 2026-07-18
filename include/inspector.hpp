@@ -22,6 +22,7 @@ namespace Inspector {
   // Drawing
   void DrawInspector();
   void DrawEngineTab();
+  void DrawInputTab();
 
   // Debug Console
   void Log(const char *message);

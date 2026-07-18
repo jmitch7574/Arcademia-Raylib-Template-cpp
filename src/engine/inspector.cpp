@@ -1,4 +1,5 @@
 #include "inspector.hpp"
+#include "engine/input/input_manager.hpp"
 #include "game_renderer.hpp"
 #include "imgui.h"
 #include "raylib.h"
@@ -52,6 +53,7 @@ void Inspector::DrawInspector() {
   if (ImGui::BeginTabBar("SystemTabs")) {
     // Draw Engine Tab
     DrawEngineTab();
+    DrawInputTab();
 
     // Draw Individual Systems
     for (auto *sys : activeInspectors) {
@@ -192,6 +194,25 @@ void Inspector::DrawEngineTab() {
         } else {
           ClearWindowState(FLAG_FULLSCREEN_MODE);
         }
+      }
+    }
+
+    ImGui::EndTabItem();
+  }
+}
+
+void Inspector::DrawInputTab() {
+
+  if (ImGui::BeginTabItem("Input")) {
+    ImGui::SeparatorText("Overall Details");
+    ImGui::Text("Player Count: %d", InputManager::GetTotalPlayerCount());
+
+    for (int i = 0; i < MAX_PLAYERS; i++) {
+      InputManager::PlayerInput player = InputManager::GetPlayerInfo(i);
+      if (player.isActive) {
+        ImGui::SeparatorText(TextFormat("Player %d", i + 1));
+        ImGui::Text("Is Keyboard: %d", player.isKeyboard);
+        ImGui::Text("Input Device: %d", player.inputIdx);
       }
     }
 
