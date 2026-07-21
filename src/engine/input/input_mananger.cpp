@@ -100,6 +100,14 @@ void InputManager::Update() {
     }
   }
 #endif
+
+  // Drop out Controllers
+  for (int playerIdx = 0; playerIdx < MAX_PLAYERS; playerIdx++) {
+    if (players[playerIdx].isActive &&
+        ActionMap::IsActionPressed(playerIdx, ActionMap::DropOut)) {
+      players[playerIdx].isActive = false;
+    }
+  }
 }
 
 int InputManager::GetKeyboardPlayerCount() {

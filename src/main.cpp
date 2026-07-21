@@ -27,6 +27,8 @@ int main() {
 
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_NAME);
 
+  SetExitKey(KEY_NULL);
+
   SetTargetFPS(TARGET_FPS);
 
   Inspector::Log(TextFormat("Game Window created at %dx%d@%dfps", WINDOW_WIDTH,

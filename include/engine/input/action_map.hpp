@@ -20,6 +20,11 @@ namespace ActionMap {
       {ArcademiaKeybinds::P1_START, ArcademiaKeybinds::P2_START},
       InputManager::BUTTON_START};
 
+  inline const InputManager::ButtonAction DropOut = {
+      {KEY_BACKSPACE},
+      {ArcademiaKeybinds::P1_EXIT, ArcademiaKeybinds::P2_EXIT},
+      InputManager::BUTTON_BACK};
+
   // Example Movement Actions
   inline const InputManager::AxisAction Movement = {
       {KEY_LEFT},
