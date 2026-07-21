@@ -1,0 +1,5 @@
+Diagnostics:
+  BackgroundIndexProgress: Report
+  ClangTidy:
+    Limit: 0
+  Limit: 0

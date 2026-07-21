@@ -1,48 +1,90 @@
-#include "game_renderer.hpp"
+#include "engine/game_renderer.hpp"
 #include "inspector.hpp"
 #include "raylib.h"
 #include "raymath.h"
+#include <cstdlib>
+#include <stack>
+#include <vector>
 
-RenderTexture2D GameRenderer::tex;
+std::stack<Renderer::Viewport *> activeViewports = {};
 
-void GameRenderer::Init(int width, int height) {
-  tex = LoadRenderTexture(width, height);
+Renderer::Viewport Renderer::CreateViewport(int width, int height,
+                                            std::vector<Shader> shaders) {
+  return Renderer::Viewport{LoadRenderTexture(width, height), shaders};
 }
 
-void GameRenderer::Begin() {
-  BeginTextureMode(tex);
-  ClearBackground(BLACK);
+void Renderer::DestroyViewport(Viewport &viewport) {
+  UnloadRenderTexture(viewport.target);
 }
 
-void GameRenderer::End() { EndTextureMode(); }
+void Renderer::BeginFrame() {
+  while (!activeViewports.empty())
+    activeViewports.pop();
+}
 
-void GameRenderer::Flip(std::vector<Shader *> shaders) {
-  for (int i = 0; i < shaders.size(); i++) {
-    BeginShaderMode(*shaders[i]);
+void Renderer::BeginViewport(Viewport &viewport) {
+  activeViewports.push(&viewport);
+  BeginTextureMode(viewport.target);
+  ClearBackground(BLANK);
+}
+
+void Renderer::EndViewport() {
+
+  EndTextureMode();
+
+  if (!activeViewports.empty()) {
+    activeViewports.pop();
   }
 
-  Rectangle destination = Rectangle(0, 0, GetScreenWidth(), GetScreenHeight());
+  // Restore previous item's texture mode
+  if (!activeViewports.empty()) {
+    BeginTextureMode(activeViewports.top()->target);
+  }
+}
 
-  if (Inspector::IsOpen()) {
-    destination.height -= Inspector::GetDeadZoneY();
-    destination.width -= Inspector::GetDeadZoneX();
+void Renderer::DrawViewport(Viewport &viewport, Rectangle destination) {
+  if (destination.width == 0 && destination.height == 0)
+    destination = Rectangle(0, 0, GetScreenWidth(), GetScreenHeight());
+
+  for (int i = 0; i < viewport.shaders.size(); i++) {
+    BeginShaderMode(viewport.shaders[i]);
   }
 
-  DrawTexturePro(tex.texture, Rectangle(0, 0, GetWidth(), -GetHeight()),
+  DrawTexturePro(viewport.target.texture,
+                 Rectangle(0, 0, viewport.target.texture.width,
+                           -viewport.target.texture.height),
                  destination, Vector2(0, 0), 0, WHITE);
 
-  for (int j = 0; j < shaders.size(); j++) {
+  for (int i = 0; i < viewport.shaders.size(); i++) {
     EndShaderMode();
   }
 }
 
-int GameRenderer::GetWidth() { return tex.texture.width; }
+Vector2 Renderer::GetMousePositionInViewport() {
+  Vector2 mousePosition = GetMousePosition();
 
-int GameRenderer::GetHeight() { return tex.texture.height; }
+  float screenW = (float)GetScreenWidth();
+  float screenH = (float)GetScreenHeight();
 
-Vector2 GameRenderer::GetScaledMousePosition() {
-  return Vector2Multiply(
-      GetMousePosition(),
-      Vector2Divide(Vector2(tex.texture.width, tex.texture.height),
-                    Vector2(GetScreenWidth(), GetScreenHeight())));
+  if (screenW <= 0.0f || screenH <= 0.0f || activeViewports.empty())
+    return Vector2{0, 0};
+
+  float viewW = (float)activeViewports.top()->target.texture.width;
+  float viewH = (float)activeViewports.top()->target.texture.height;
+
+  float effectiveW = screenW;
+  float effectiveH = screenH;
+
+  if (Inspector::IsOpen()) {
+    effectiveW -= (float)Inspector::GetDeadZoneX();
+    effectiveH -= (float)Inspector::GetDeadZoneY();
+
+    if (effectiveW <= 0.0f || effectiveH <= 0.0f)
+      return Vector2{0, 0};
+  }
+
+  mousePosition.x *= (viewW / effectiveW);
+  mousePosition.y *= (viewH / effectiveH);
+
+  return mousePosition;
 }

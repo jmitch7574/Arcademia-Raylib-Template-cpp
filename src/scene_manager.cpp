@@ -15,7 +15,7 @@ std::vector<SceneRegistry> sceneList = {
     {"Play Scene", []() { return std::make_unique<PlayScene>(); }}};
 
 void SceneManager::DrawInspector() {
-  ImGui::Text("Current Scene: %s", currentScene->GetName().c_str());
+  ImGui::Text("Current Scene: %s", currentScene->GetName());
   ImGui::SeparatorText("Load Scene");
 
   for (auto &scene : sceneList) {

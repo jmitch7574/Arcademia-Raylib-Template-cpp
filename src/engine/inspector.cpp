@@ -1,7 +1,7 @@
 #include "inspector.hpp"
 #include "engine/input/action_map.hpp"
+#include "engine/input/controller_connect_scene.hpp"
 #include "engine/input/input_manager.hpp"
-#include "game_renderer.hpp"
 #include "imgui.h"
 #include "raylib.h"
 #include "rlImGui.h"
@@ -145,12 +145,8 @@ void Inspector::DrawEngineTab() {
     ImGui::Text("DearImgui v%s", IMGUI_VERSION);
 
     ImGui::SeparatorText("Details");
-    ImGui::Text("Mouse Position (Window): %f %f", GetMousePosition().x,
+    ImGui::Text("Mouse Position: %f %f", GetMousePosition().x,
                 GetMousePosition().y);
-
-    ImGui::Text("Mouse Position (Internal): %f %f",
-                GameRenderer::GetScaledMousePosition().x,
-                GameRenderer::GetScaledMousePosition().y);
 
     // Performance Graphs
     ImGui::SeparatorText("Performance");
@@ -219,6 +215,12 @@ void Inspector::DrawInputTab() {
 
     if (ImGui::Button("Action Map Debug")) {
       sceneManager.SetScene(std::make_unique<ActionMap::ActionDebugScene>());
+    }
+    if (ImGui::Button("Controller Connect")) {
+      ControllerConnectConfig config = {
+          1, 4, []() { return std::make_unique<MainMenu>(); }};
+
+      sceneManager.SetScene(std::make_unique<ControllerConnectScene>(config));
     }
 
     for (int i = 0; i < MAX_PLAYERS; i++) {

@@ -1,25 +1,38 @@
+#include "engine/game_renderer.hpp"
 #include "engine/input/action_map.hpp"
 #include "engine/input/arcademia_keybinds.hpp"
 #include "engine/input/input_manager.hpp"
-#include "game_renderer.hpp"
 #include <raylib.h>
 #include <vector>
 
-ActionMap::ActionDebugScene::ActionDebugScene() {}
+#define SCENE_WIDTH 640.0
+#define SCENE_HEIGHT 360.0
 
-ActionMap::ActionDebugScene::~ActionDebugScene() {}
+namespace {
+  Renderer::Viewport viewport;
+  Font tiny5;
+} // namespace
+
+ActionMap::ActionDebugScene::ActionDebugScene() {
+  viewport = Renderer::CreateViewport(SCENE_WIDTH, SCENE_HEIGHT);
+  tiny5    = LoadFont("resources/fonts/arcademia.fnt");
+  SetTextureFilter(tiny5.texture, TEXTURE_FILTER_POINT);
+}
+
+ActionMap::ActionDebugScene::~ActionDebugScene() {
+  Renderer::DestroyViewport(viewport);
+}
 
 void ActionMap::ActionDebugScene::Update() {}
 
 void ActionMap::ActionDebugScene::Draw() {
-  float width = GameRenderer::GetWidth();
+  Renderer::BeginViewport(viewport);
 
-  float columnWidth = width / MAX_PLAYERS;
+  float columnWidth = SCENE_WIDTH / MAX_PLAYERS;
 
   // Draw Column Separators
   for (int i = 1; i < MAX_PLAYERS; i++) {
-    DrawLine(columnWidth * i, 0, columnWidth * i, GameRenderer::GetHeight(),
-             GRAY);
+    DrawLine(columnWidth * i, 0, columnWidth * i, SCENE_HEIGHT, GRAY);
   }
 
   // Draw Columns
@@ -43,34 +56,38 @@ void ActionMap::ActionDebugScene::Draw() {
              col);
 
     if (!player.isActive)
-      return;
+      continue;
 
     std::string nameText = InputManager::GetFriendlyName(i);
-    float nameWidth      = MeasureText(nameText.c_str(), 10);
+    if (nameText.length() > 20)
+      nameText = TextFormat("%s...", TextSubtext(nameText.c_str(), 0, 20));
+    float nameWidth = MeasureText(nameText.c_str(), 10);
 
-    DrawText(nameText.c_str(), xStart + (xWidth - nameWidth) / 2, 50, 10,
-             WHITE);
+    DrawText(nameText.c_str(), xStart + (xWidth - nameWidth) / 2, 50, 5, WHITE);
 
     int yOffset = 100;
     for (auto &buttonAction : ActionMap::ButtonDict) {
       Color col = ActionMap::IsActionDown(i, buttonAction.second) ? RED : GRAY;
 
-      DrawCircle(xStart + 15, yOffset, 10, col);
-      DrawText(buttonAction.first, xStart + 75, yOffset - 10, 20, WHITE);
+      DrawCircle(xStart + 15, yOffset, 5, col);
+      DrawText(buttonAction.first, xStart + 30, yOffset - 5, 10, WHITE);
 
       yOffset += 35;
     }
 
-    constexpr int axisWidth = 45;
+    constexpr int axisWidth = 20;
     for (auto &axisAction : ActionMap::AxisDict) {
       float axis       = ActionMap::GetAxis(i, axisAction.second);
       float lineOffset = (axisWidth / 2.0) + (axis * (axisWidth / 2.0));
 
-      DrawRectangle(xStart + 15, yOffset - 10, axisWidth, 20, GRAY);
-      DrawRectangle(xStart + 15 + (lineOffset - 5), yOffset - 10, 10, 20, RED);
-      DrawText(axisAction.first, xStart + 75, yOffset - 10, 20, WHITE);
+      DrawRectangle(xStart + 5, yOffset - 10, axisWidth, 5, GRAY);
+      DrawRectangle(xStart + 5 + (lineOffset - 1), yOffset - 10, 2, 5, RED);
+      DrawText(axisAction.first, xStart + 30, yOffset - 12, 10, WHITE);
 
       yOffset += 35;
     }
   }
+
+  Renderer::EndViewport();
+  Renderer::DrawViewport(viewport);
 }

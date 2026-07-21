@@ -1,15 +1,22 @@
 #pragma once
 #include "scene.hpp"
 #include <raylib.h>
+#include <vector>
 
-#define MAX_PLAYERS 4
+#define MAX_PLAYERS 8 // The engine's max limit, ideally, don't change this
 #define MAX_KEYBOARD_PLAYERS 1 // Change if you want two players on one keyboard
-#define MAX_CONTROLLER_PLAYERS 3
 #define MAX_CONTROLLER_LISTENING                                               \
   128 // How many of raylib's controller indexes we
       // listen to
 
 namespace InputManager {
+
+  // Player Colours
+  constexpr Color playerColours[MAX_PLAYERS] = {
+      Color(245, 46, 46, 255),  Color(84, 99, 255, 255),
+      Color(255, 199, 23, 255), Color(31, 158, 64, 255),
+      Color(255, 102, 25, 255), Color(36, 212, 196, 255),
+      Color(212, 28, 229, 255), Color(74, 69, 89, 255)};
 
   enum EngineButton {
     BUTTON_INVALID       = -1,
@@ -58,6 +65,9 @@ namespace InputManager {
     int inputIdx;
 
     bool isActive;
+
+    float lifetime                  = 0; // Time since this input became active
+    float timeSinceIdentifyingInput = 0; // Time since a repeating join press
   };
 
   // System Lifecycle
@@ -76,12 +86,13 @@ namespace InputManager {
   int GetNextEmptyPlayerSlot();
   PlayerInput GetPlayerInfo(int playerIdx);
   const char *GetFriendlyName(int playerIdx);
+  Color GetPlayerColor(int playerIdx);
 
   class GamepadDebugScene : public Scene {
   public:
     GamepadDebugScene();
     ~GamepadDebugScene();
-    std::string GetName() const override { return "GamepadDebug"; }
+    const char *GetName() const override { return "GamepadDebug"; }
 
     void Update() override;
     void Draw() override;

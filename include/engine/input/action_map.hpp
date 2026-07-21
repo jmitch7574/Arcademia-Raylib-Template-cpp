@@ -48,7 +48,7 @@ namespace ActionMap {
   public:
     ActionDebugScene();
     ~ActionDebugScene();
-    std::string GetName() const override { return "ActionDebug"; }
+    const char *GetName() const override { return "ActionDebug"; }
 
     void Update() override;
     void Draw() override;

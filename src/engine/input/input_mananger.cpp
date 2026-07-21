@@ -1,6 +1,8 @@
 #include "engine/input/action_map.hpp"
 #include "engine/input/arcademia_keybinds.hpp"
 #include "engine/input/input_manager.hpp"
+#include "inspector.hpp"
+#include <cstddef>
 #include <raylib.h>
 #include <vector>
 
@@ -16,14 +18,28 @@ void InputManager::Initialise() {
 
 void InputManager::Update() {
 
+  // Update Lifetimes
+  for (auto &player : players) {
+    if (player.isActive) {
+      player.lifetime += GetFrameTime();
+      player.timeSinceIdentifyingInput += GetFrameTime();
+    }
+  }
+
   // Look for new players
 
 #ifdef ARCADEMIA
-  if (IsKeyPressed(P1_START)) {
-    players[0] = {true, 0, true};
+  if (IsKeyPressed(ArcademiaKeybinds::P1_START)) {
+    if (players[0].isActive)
+      players[0].timeSinceIdentifyingInput = 0;
+    else
+      players[0] = {true, 0, true};
   }
-  if (IsKeyPressed(P2_START)) {
-    players[1] = {true, 1, true};
+  if (IsKeyPressed(ArcademiaKeybinds::P2_START)) {
+    if (players[1].isActive)
+      players[1].timeSinceIdentifyingInput = 0;
+    else
+      players[1] = {true, 1, true};
   }
 #else
 
@@ -35,6 +51,13 @@ void InputManager::Update() {
       if (IsThereAvailablePlayerSlot())
         players[GetNextEmptyPlayerSlot()] = {true, GetKeyboardPlayerCount(),
                                              true};
+    }
+  }
+
+  for (auto &player : players) {
+    if (player.isActive && player.isKeyboard &&
+        IsKeyPressed(ActionMap::JoinGame.keyboardButton[player.inputIdx])) {
+      player.timeSinceIdentifyingInput = 0;
     }
   }
 
@@ -50,8 +73,12 @@ void InputManager::Update() {
     bool controllerTaken = false;
     for (int j = 0; j < MAX_PLAYERS; j++) {
       if (players[j].isActive && !players[j].isKeyboard &&
-          players[j].inputIdx == gamepadIdx)
+          players[j].inputIdx == gamepadIdx) {
         controllerTaken = true;
+        if (IsGamepadButtonPressed(gamepadIdx,
+                                   ActionMap::JoinGame.controllerButton))
+          players[j].timeSinceIdentifyingInput = 0;
+      }
     }
     if (controllerTaken)
       continue;
@@ -128,6 +155,12 @@ int InputManager::GetNextEmptyPlayerSlot() {
 }
 
 InputManager::PlayerInput InputManager::GetPlayerInfo(int playerIdx) {
+  if (playerIdx > MAX_PLAYERS) {
+    Inspector::Error(
+        "Caught query trying to get player index outside of alotted bounds");
+
+    return {};
+  }
   return players[playerIdx];
 }
 
@@ -139,4 +172,15 @@ const char *InputManager::GetFriendlyName(int playerIdx) {
   } else {
     return GetGamepadName(player->inputIdx);
   }
+}
+
+Color InputManager::GetPlayerColor(int playerIdx) {
+  if (playerIdx > MAX_PLAYERS) {
+    Inspector::Error(
+        "Caught query trying to get player index outside of alotted bounds");
+
+    return RED;
+  }
+
+  return playerColours[playerIdx];
 }

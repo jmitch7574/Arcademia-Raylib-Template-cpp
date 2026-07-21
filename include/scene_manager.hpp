@@ -7,6 +7,7 @@
 class SceneManager : IInspector {
 private:
   std::unique_ptr<Scene> currentScene;
+  std::unique_ptr<Scene> nextScene = nullptr;
 
 public:
   bool shouldExit = false;
@@ -16,8 +17,15 @@ public:
   ~SceneManager() {}
 
   void SetScene(std::unique_ptr<Scene> scene) {
-    Inspector::Log(TextFormat("Loaded Scene: %s", scene->GetName().c_str()));
-    currentScene = std::move(scene);
+    Inspector::Log(TextFormat("Loaded Scene: %s", scene->GetName()));
+    nextScene = std::move(scene);
+  }
+
+  void LateUpdate() {
+    if (nextScene != nullptr) {
+      currentScene = std::move(nextScene);
+      nextScene    = nullptr;
+    }
   }
 
   void Update() {

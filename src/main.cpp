@@ -1,9 +1,10 @@
+#include "engine/game_renderer.hpp"
 #include "engine/input/input_manager.hpp"
-#include "game_renderer.hpp"
 #include "game_resources.hpp"
 #include "imgui.h"
 #include "inspector.hpp"
 #include "raylib.h"
+#include "raymath.h"
 #include "rlImGui.h"
 #include "scene.hpp"
 #include "scene_manager.hpp"
@@ -14,10 +15,7 @@
 #define WINDOW_NAME "Arcademia Game"
 #define TARGET_FPS 60
 
-#define INTERNAL_WIDTH 1280
-#define INTERNAL_HEIGHT 720
-
-#define GetMousePosition GameRenderer::GetScaledMousePosition
+#define GetMousePosition Renderer::GetMousePositionInViewport
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
 #undef GetMousePosition
@@ -34,12 +32,11 @@ int main() {
   Inspector::Log(TextFormat("Game Window created at %dx%d@%dfps", WINDOW_WIDTH,
                             WINDOW_HEIGHT, TARGET_FPS));
 
-  GameRenderer::Init(INTERNAL_WIDTH, INTERNAL_HEIGHT);
+  Renderer::Viewport root =
+      Renderer::CreateViewport(WINDOW_WIDTH, WINDOW_HEIGHT);
 
-  Inspector::Log(TextFormat("Internal Render Texture initialised at %dx%d",
-                            INTERNAL_WIDTH, INTERNAL_HEIGHT));
-
-  GameResources::LoadResources();
+  Inspector::Log(TextFormat("Root Render Texture initialised at %dx%d",
+                            WINDOW_HEIGHT, TARGET_FPS));
 
 #ifdef RELEASE
   sceneManager.SetScene(std::make_unique<MainMenu>());
@@ -60,28 +57,38 @@ int main() {
       sceneManager.Update();
     }
 
-    // Drawing Logic Here =======================
-    GameRenderer::Begin();
+    // Drawing Systems to Root Viewport =======================
+    Renderer::BeginViewport(root);
 
     sceneManager.Draw();
 
-    GameRenderer::End();
+    Renderer::EndViewport();
 
+    // Draw root viewport to screen ===============
     BeginDrawing();
     ClearBackground(BLACK);
 
-    if (Inspector::ShouldPauseGame()) {
-      GameRenderer::Flip({&GameResources::Blur});
-      DrawRectangleRec(Rectangle(0, 0, GetScreenWidth(), -GetScreenHeight()),
-                       Color(0, 0, 0, 180));
+    if (Inspector::IsOpen()) {
+      Vector2 screenSizeMinusViewport = Vector2Subtract(
+          Vector2(GetScreenWidth(), GetScreenHeight()),
+          Vector2(Inspector::GetDeadZoneX(), Inspector::GetDeadZoneY()));
+
+      Rectangle screenMinusViewport =
+          Rectangle(0, 0, screenSizeMinusViewport.x, screenSizeMinusViewport.y);
+
+      Renderer::DrawViewport(root, screenMinusViewport);
+      if (Inspector::ShouldPauseGame()) {
+        DrawRectangleRec(screenMinusViewport, Color(180, 180, 180, 128));
+      }
+
+      Inspector::DrawInspector();
     } else {
-      GameRenderer::Flip({});
+      Renderer::DrawViewport(root);
     }
 
-    if (Inspector::IsOpen())
-      Inspector::DrawInspector();
-
     EndDrawing();
+
+    sceneManager.LateUpdate();
   }
 
   Inspector::Shutdown();
