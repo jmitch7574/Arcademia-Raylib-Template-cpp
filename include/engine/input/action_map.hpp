@@ -12,6 +12,11 @@ namespace ActionMap {
                         const InputManager::ButtonAction &action);
   float GetAxis(int playerIdx, const InputManager::AxisAction &action);
 
+  bool IsActionPressedGlobal(const InputManager::ButtonAction &action);
+  bool IsActionDownGlobal(const InputManager::ButtonAction &action);
+  bool IsActionReleasedGlobal(const InputManager::ButtonAction &action);
+  float GetAxisGlobal(const InputManager::AxisAction &action);
+
   // Define Actions Here
 
   // Join Controller
