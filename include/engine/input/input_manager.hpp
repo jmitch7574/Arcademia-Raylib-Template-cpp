@@ -11,6 +11,8 @@
 
 namespace InputManager {
 
+  inline bool listening;
+
   // Player Colours
   constexpr Color playerColours[MAX_PLAYERS] = {
       Color(245, 46, 46, 255),  Color(84, 99, 255, 255),
@@ -64,7 +66,8 @@ namespace InputManager {
     bool isKeyboard;
     int inputIdx;
 
-    bool isActive;
+    bool isActive;    // Whether or not this player slot is active in game
+    bool isConnected; // Whether or not this player has a connected input
 
     float lifetime                  = 0; // Time since this input became active
     float timeSinceIdentifyingInput = 0; // Time since a repeating join press
@@ -75,15 +78,21 @@ namespace InputManager {
   void Update();
 
   // System State
-  void BeginListening(); // Start allowing players to join
-  void EndListening();   // Stop allowing players to join
+  void BeginListening();           // Start allowing players to join
+  void EndListening();             // Stop allowing players to join
+  void ClearDisconnectedPlayers(); // Deactivate any active player slots without
+                                   // a connected input
+  void CheckPlayerJoins();
+  void CheckControllerDisconnects();
+  void CheckPlayerDrops();
 
   // System Stats
   int GetKeyboardPlayerCount();
   int GetControllerPlayerCount();
   int GetTotalPlayerCount();
   bool IsThereAvailablePlayerSlot();
-  int GetNextEmptyPlayerSlot();
+  int GetNextInactivePlayerSlot();
+  int GetNextDisconnectedPlayerSlot();
   PlayerInput GetPlayerInfo(int playerIdx);
   const char *GetFriendlyName(int playerIdx);
   Color GetPlayerColor(int playerIdx);

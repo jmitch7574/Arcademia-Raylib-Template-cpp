@@ -8,11 +8,9 @@
 
 static InputManager::PlayerInput players[MAX_PLAYERS];
 
-static bool listening = false;
-
 void InputManager::Initialise() {
   for (int i = 0; i < MAX_PLAYERS; i++) {
-    players[i] = {false, -1, false};
+    players[i] = {false, -1, false, false};
   }
 }
 
@@ -26,20 +24,43 @@ void InputManager::Update() {
     }
   }
 
+  CheckPlayerJoins();
+  CheckPlayerDrops();
+  CheckControllerDisconnects();
+
+  if (listening) {
+    ClearDisconnectedPlayers();
+  }
+}
+
+void InputManager::BeginListening() { listening = true; }
+
+void InputManager::EndListening() { listening = false; }
+
+void InputManager::ClearDisconnectedPlayers() {
+  for (int i = 0; i < MAX_PLAYERS; i++) {
+    if (players[i].isActive && !players[i].isKeyboard &&
+        !players[i].isConnected) {
+      players[i].isActive = false;
+    }
+  }
+}
+
+void InputManager::CheckPlayerJoins() {
   // Look for new players
 
 #ifdef ARCADEMIA
   if (IsKeyPressed(ArcademiaKeybinds::P1_START)) {
     if (players[0].isActive)
       players[0].timeSinceIdentifyingInput = 0;
-    else
-      players[0] = {true, 0, true};
+    else if (listening)
+      players[0] = {true, 0, true, true};
   }
   if (IsKeyPressed(ArcademiaKeybinds::P2_START)) {
     if (players[1].isActive)
       players[1].timeSinceIdentifyingInput = 0;
-    else
-      players[1] = {true, 1, true};
+    else if (listening)
+      players[1] = {true, 1, true, true};
   }
 #else
 
@@ -48,9 +69,12 @@ void InputManager::Update() {
     // Look for next keyboard player's input map
     if (IsKeyPressed(
             ActionMap::JoinGame.keyboardButton[GetKeyboardPlayerCount()])) {
-      if (IsThereAvailablePlayerSlot())
-        players[GetNextEmptyPlayerSlot()] = {true, GetKeyboardPlayerCount(),
-                                             true};
+      if (listening && IsThereAvailablePlayerSlot())
+        players[GetNextInactivePlayerSlot()] = {true, GetKeyboardPlayerCount(),
+                                                true, true};
+      if (!listening && GetNextDisconnectedPlayerSlot() != -1)
+        players[GetNextDisconnectedPlayerSlot()] = {
+            true, GetKeyboardPlayerCount(), true, true};
     }
   }
 
@@ -86,24 +110,34 @@ void InputManager::Update() {
     // Check if the start button of this controller is pressed
     if (IsGamepadButtonPressed(gamepadIdx,
                                ActionMap::JoinGame.controllerButton)) {
-      if (IsThereAvailablePlayerSlot())
-        players[GetNextEmptyPlayerSlot()] = {false, gamepadIdx, true};
+      if (listening && IsThereAvailablePlayerSlot())
+        players[GetNextInactivePlayerSlot()] = {false, gamepadIdx, true, true};
+      if (!listening && GetNextDisconnectedPlayerSlot() != -1)
+        players[GetNextDisconnectedPlayerSlot()] = {
+            false, gamepadIdx, true, true,
+            players[GetNextDisconnectedPlayerSlot()].lifetime};
     }
   }
 
+#endif
+}
+
+void InputManager::CheckControllerDisconnects() {
   // Look for Unavailable Controllers
   for (int playerIdx = 0; playerIdx < MAX_PLAYERS; playerIdx++) {
-    if (players[playerIdx].isActive && !players[playerIdx].isKeyboard) {
+    if (players[playerIdx].isActive && players[playerIdx].isConnected &&
+        !players[playerIdx].isKeyboard) {
       if (!IsGamepadAvailable(players[playerIdx].inputIdx)) {
-        players[playerIdx].isActive = false;
+        players[playerIdx].isConnected = false;
       }
     }
   }
-#endif
+}
 
+void InputManager::CheckPlayerDrops() {
   // Drop out Controllers
   for (int playerIdx = 0; playerIdx < MAX_PLAYERS; playerIdx++) {
-    if (players[playerIdx].isActive &&
+    if (players[playerIdx].isActive && players[playerIdx].isConnected &&
         ActionMap::IsActionPressed(playerIdx, ActionMap::DropOut)) {
       players[playerIdx].isActive = false;
     }
@@ -123,7 +157,7 @@ int InputManager::GetKeyboardPlayerCount() {
 int InputManager::GetControllerPlayerCount() {
   int cpc = 0;
   for (int i = 0; i < MAX_PLAYERS; i++) {
-    if (!players[i].isKeyboard && players[i].isActive)
+    if (!players[i].isKeyboard && players[i].isActive && players[i].isConnected)
       cpc++;
   }
 
@@ -150,12 +184,24 @@ bool InputManager::IsThereAvailablePlayerSlot() {
   return false;
 }
 
-// Returns the index of the next available player slot
+// Returns the index of the next inactive player slot
 // Returns -1 if all slots are filled
-int InputManager::GetNextEmptyPlayerSlot() {
+int InputManager::GetNextInactivePlayerSlot() {
 
   for (int i = 0; i < MAX_PLAYERS; i++) {
     if (!players[i].isActive)
+      return i;
+  }
+
+  return -1;
+}
+
+// Returns the index of the next active player slot with no device
+// Returns -1 if all slots are filled
+int InputManager::GetNextDisconnectedPlayerSlot() {
+
+  for (int i = 0; i < MAX_PLAYERS; i++) {
+    if (players[i].isActive && !players[i].isConnected)
       return i;
   }
 

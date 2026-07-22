@@ -48,10 +48,13 @@ ControllerConnectScene::ControllerConnectScene(
   keyboardMicro   = LoadTexture("resources/engine/input/keyboard_micro.png");
   controllerMicro = LoadTexture("resources/engine/input/controller_micro.png");
   arcadeMicro     = LoadTexture("resources/engine/input/arcade_micro.png");
+
+  InputManager::listening = true;
 }
 
 ControllerConnectScene::~ControllerConnectScene() {
   Renderer::DestroyViewport(viewport);
+  InputManager::listening = false;
 }
 
 void ControllerConnectScene::Update() {
@@ -188,6 +191,8 @@ void ControllerConnectScene::DrawInspector() {
   ImGui::SeparatorText("Config");
   ImGui::Text("Minimum Players: %d", config.minPlayers);
   ImGui::Text("Maximum Players: %d", config.maxPlayers);
+  ImGui::SeparatorText("Control");
+  ImGui::Checkbox("Listening", &InputManager::listening);
   ImGui::SeparatorText("Calculated Layout");
   ImGui::Text("Row One Elements: %d", rowOneCount);
   ImGui::Text("Row Two Elements: %d", rowTwoCount);
